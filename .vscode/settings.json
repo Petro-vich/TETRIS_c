@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "brickgame.h": "c",
+    "tetris.h": "c",
+    "stdlib.h": "c"
+  }
+}
