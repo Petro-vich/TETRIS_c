@@ -2,6 +2,8 @@
   "files.associations": {
     "brickgame.h": "c",
     "tetris.h": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "frontend.h": "c",
+    "backend.h": "c"
   }
 }

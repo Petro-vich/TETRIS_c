@@ -8,8 +8,7 @@
         "-fdiagnostics-color=always",
         "-g",
         "${file}",
-        "/home/gaylesha/Desktop/s21.project/TETRIS_c/src/brick_game/tetris/tetris.c",
-        "",
+        "/home/gaylesga/Desktop/s21.project/TETRIS_c/src/brick_game/tetris/backend.c",
         "-o",
         "${fileDirname}/${fileBasenameNoExtension}"
       ],
