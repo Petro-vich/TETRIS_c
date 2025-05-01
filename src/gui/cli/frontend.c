@@ -1,7 +1,10 @@
 #include "../../brick_game/tetris/backend.h"
 #include "frontend.h"
 
+
 int main(void) {
+  WIN_INIT(50);
+
   gameLoop();
   return 0;
 }   
@@ -10,18 +13,17 @@ void gameLoop() {
   GameState_t *gs = getGs();
   GameInfo_t gi;
   
-
   while (gs->status != Terminate) {
     gi = updateCurrentState(gs);
-    printField(gi.field);
+    Draw(&gi);
     handleUserInput(gs);
     freeGameInfo(&gi);
   }
 }
 
+
 void handleUserInput(GameState_t *gs) {
-  int key = getchar();
-  while (getchar() != '\n');
+  int key = getch();
   
   switch (key) {
     case 'q':
@@ -30,23 +32,20 @@ void handleUserInput(GameState_t *gs) {
     case 'p':
       gs->status = Pause;
       break;
-    case ENTER:
+    case KEY_ENTER:
       gs->status = Initial; 
       break;
-    case '2':
-      gs->status = Pause;
-      break;
-    case LEFT:
+    case KEY_LEFT:
       gs->status = Left;
       break;
-    case RIGHT:
+    case KEY_RIGHT:
       gs->status = Right;
       break;
-    case DOWN:
+    case KEY_DOWN:
       gs->status = Down;
       break;
-    case '6':
-
-      
+    case KEY_UP:
+    //Dont; use
+      break;
   }
 }

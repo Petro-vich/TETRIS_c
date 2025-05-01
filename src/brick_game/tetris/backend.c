@@ -33,8 +33,6 @@ GameInfo_t
   switch (gs->status) {
     case Initial:
       initGameState();
-      gs->status = Spawn;
-
       break;
     case Spawn:
       gs->figure = gs->next;
@@ -134,18 +132,52 @@ int canMove(GameState_t *gs) {
   return check;
 }
 
-void printField(int **field) {
+// void printField(int **field) {
+//   for (int i = 0; i < FIELD_ROWS; i++) {
+//     for (int j = 0; j < FIELD_COLS; j++) {
+//       if (field[i][j] == 1) {
+//         printf("*");
+//       } else {
+//         printf("0");
+//       }
+//     }
+//     printf("\n");
+//   }
+// }
+
+
+
+void Draw(GameInfo_t *gi) {
+  GameState_t *gs = getGs();
+
+  int win_height = FIELD_ROWS+1;
+  int win_width = FIELD_COLS+2;
+  int starty = (LINES - win_height) / 2;
+  int startx = (COLS - win_width) / 2;
+
+  WINDOW *game_win = newwin(win_height, win_width, starty, startx);
+  box(game_win, 0, 0);
+
+  // Рисуем игровое поле
   for (int i = 0; i < FIELD_ROWS; i++) {
     for (int j = 0; j < FIELD_COLS; j++) {
-      if (field[i][j] == 1) {
-        printf("*");
+      if (gi->field[i][j] == 1) {
+        mvwaddch(game_win, i, j, '1');
       } else {
-        printf("0");
+        mvwaddch(game_win, i+1, j, '0');
       }
     }
-    printf("\n");
   }
+
+  // Если статус Initial — показать меню
+  if (gs->status == Initial) {
+    mvwprintw(game_win, FIELD_ROWS / 2, (FIELD_COLS - strlen("Press ENTER")) / 2, "Press ENTER");
+  }
+
+  wrefresh(game_win);
+  delwin(game_win);
 }
+
 
 void freeGameInfo(GameInfo_t *gi) {
   for (int i = 0; i < FIELD_ROWS; i++) {
@@ -222,7 +254,7 @@ void initGameState() {
   gs->next = generateFigure();
   // gs->x = SPAWN_X;
   // gs->y = SPAWN_Y;
-  gs->status = 0;
+  gs->status = Initial;
   gs->score = 0;
   gs->high_score = 10000;
   gs->level = 1;
