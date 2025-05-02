@@ -30,10 +30,10 @@ GameInfo_t
   gi.speed = gs->speed;
   gi.pause = gs->pause;
 
+
   switch (gs->status) {
     case Initial:
       initGameState();
-      break;
     case Spawn:
       gs->figure = gs->next;
       gs->next = generateFigure();
@@ -150,32 +150,63 @@ int canMove(GameState_t *gs) {
 void Draw(GameInfo_t *gi) {
   GameState_t *gs = getGs();
 
-  int win_height = FIELD_ROWS+1;
-  int win_width = FIELD_COLS+2;
-  int starty = (LINES - win_height) / 2;
-  int startx = (COLS - win_width) / 2;
 
-  WINDOW *game_win = newwin(win_height, win_width, starty, startx);
-  box(game_win, 0, 0);
+    // 2. Параметры основного окна
+    int total_height = GAME_HEIGHT + BORDER_WIDTH;
+    int total_width = GAME_WIDTH + INFO_WIDTH + BORDER_WIDTH + BORDER_WIDTH; //Два окна по 2 символа
+    int start_y = LINES / 2 - total_height / 2;
+    int start_x = COLS / 2 - total_width / 2;
 
-  // Рисуем игровое поле
-  for (int i = 0; i < FIELD_ROWS; i++) {
-    for (int j = 0; j < FIELD_COLS; j++) {
-      if (gi->field[i][j] == 1) {
-        mvwaddch(game_win, i, j, '1');
-      } else {
-        mvwaddch(game_win, i+1, j, '0');
-      }
+    // 3. Создание основного окна
+    WINDOW *main_win = newwin(total_height, total_width, start_y, start_x);
+    box(main_win, 0, 0);
+    
+    
+    // 4. Создание игрового поля
+    WINDOW *game_win = derwin(main_win, GAME_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
+    box(game_win, 0, 0);
+    
+    // 5. Создание информационного окна
+    WINDOW *info_win = derwin(main_win, GAME_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
+    box(info_win, 0, 0);
+    
+    // 6. Создание окна следующей фигуры
+    WINDOW *newtFigure = derwin(info_win, 6, 6, 2 , 4);
+    box(newtFigure, 0, 0);
+
+    // 6. Отрисовка информационного окна
+    wattron(info_win, COLOR_PAIR(1));
+    mvwprintw(info_win, 1, 5, "Next:");
+    
+    wattron(info_win, COLOR_PAIR(2));
+    mvwprintw(info_win, 8, 4, "Score: %d", gi->score);
+    mvwprintw(info_win, 10, 2, "Max Score: 0");
+    
+    wattron(info_win, COLOR_PAIR(3));
+    mvwprintw(info_win, 12, 4, "lvl: %d", gi->level);
+    
+    // 7. Обновление окон
+    wrefresh(main_win);
+    wrefresh(game_win);
+    wrefresh(info_win);
+    
+    if (gs->status == Initial) {
+      WINDOW *waitEnter = derwin(main_win, 7, 27, 8, 1);
+      werase(waitEnter);
+      box(waitEnter, 0, 0);
+      wattron(waitEnter, COLOR_PAIR(3));
+      mvwprintw(waitEnter, 3, 7, "PREESS ENTER");
+      wrefresh(waitEnter);
+      delwin(waitEnter);
     }
-  }
-
-  // Если статус Initial — показать меню
-  if (gs->status == Initial) {
-    mvwprintw(game_win, FIELD_ROWS / 2, (FIELD_COLS - strlen("Press ENTER")) / 2, "Press ENTER");
-  }
-
-  wrefresh(game_win);
-  delwin(game_win);
+    
+    // 9. Освобождение ресурсов
+    delwin(info_win);
+    delwin(game_win);
+    delwin(main_win);
+    
+    endwin();
+    
 }
 
 

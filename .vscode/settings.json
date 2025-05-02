@@ -4,6 +4,10 @@
     "tetris.h": "c",
     "stdlib.h": "c",
     "frontend.h": "c",
-    "backend.h": "c"
+    "backend.h": "c",
+    "time.h": "c",
+    "stdio.h": "c",
+    "unistd.h": "c",
+    "ncurses.h": "c"
   }
 }

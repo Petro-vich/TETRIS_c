@@ -1,6 +1,6 @@
 CC = gcc
 CFLAGS = -Wall -Wextra -Werror -std=c11
-LDFLAGS = -lm
+LDFLAGS = -lm -lncurses
 
 SRC_DIR = .
 GUI_DIR = gui/cli

@@ -6,6 +6,18 @@
 #define RIGHT 100
 #define DOWN 115
 
+#define GAME_HEIGHT 20
+#define GAME_WIDTH 10
+#define INFO_WIDTH 15
+#define BORDER_WIDTH 2
+
+#include <time.h>
+#include <stdio.h>
+#include <ncurses.h>
+#include <unistd.h>
+#include "../../brick_game/brickgame.h"
+#include "../../brick_game/tetris/backend.h"
+
 #define WIN_INIT(time)     \
   {                        \
     initscr();             \
@@ -15,13 +27,12 @@
     timeout(time);         \
     nodelay(stdscr, TRUE); \
     start_color();         \
+    init_pair(1, COLOR_BLUE, COLOR_BLACK);  \
+    init_pair(2, COLOR_GREEN, COLOR_BLACK); \
+    init_pair(3, COLOR_CYAN, COLOR_BLACK);  \
   }
 
-#include <time.h>
-#include <stdio.h>
-#include <ncurses.h>
-#include "../../brick_game/brickgame.h"
-#include "../../brick_game/tetris/backend.h"
+
 
 void gameLoop();
 void handleUserInput(GameState_t *gs);

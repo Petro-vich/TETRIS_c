@@ -2,7 +2,7 @@
 #define TETRIS_H
 
 #include "../brickgame.h"
-
+#include <string.h>
 #define SPAWN_X 4
 #define SPAWN_Y 0 
 
@@ -44,5 +44,8 @@ void updateField(GameInfo_t *gi, GameState_t *gs);
 void freeGameInfo(GameInfo_t *gi);
 void copyField(GameInfo_t *gi, GameState_t *gs);
 void Draw(GameInfo_t *gm);
+
+void initWindows();
+void cleanupWindows();
 
 #endif
