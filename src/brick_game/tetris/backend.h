@@ -6,21 +6,6 @@
 #define SPAWN_X 4
 #define SPAWN_Y 0 
 
-
-typedef struct {
-  int **field;
-  int **figure;
-  int **next;  
-  int x;
-  int y;
-  int status;
-  int score;
-  int high_score;
-  int level;
-  int speed;
-  int pause;
-}GameState_t;
-
 typedef enum {
   Initial,
   Spawn,
@@ -31,8 +16,26 @@ typedef enum {
 }GameStatus_t;
 
 
+typedef struct {
+  int **field;
+  int **figure;
+  int **next;  
+  int x;
+  int y;
+  int score;
+  int high_score;
+  int level;
+  int speed;
+  int pause;
+  int button;
+  int is_play;
+  GameStatus_t status;
+}GameState_t;
+
+
+
 GameState_t* getGs();
-GameInfo_t updateCurrentState(GameState_t *gs);
+GameInfo_t updateCurrentState();
 
 int** createMatrix(int rows, int cols);
 void initGameState();
@@ -43,9 +46,6 @@ int canMove(GameState_t *gs);
 void updateField(GameInfo_t *gi, GameState_t *gs);
 void freeGameInfo(GameInfo_t *gi);
 void copyField(GameInfo_t *gi, GameState_t *gs);
-void Draw(GameInfo_t *gm);
-
-void initWindows();
-void cleanupWindows();
+// void cleanupWindows();
 
 #endif

@@ -18,6 +18,16 @@
 #include "../../brick_game/brickgame.h"
 #include "../../brick_game/tetris/backend.h"
 
+
+typedef struct 
+{
+  WINDOW *main;
+  WINDOW *game;
+  WINDOW *info;
+  WINDOW *newtFigure;  
+  WINDOW *waitEnter;
+} GameWindows_t;
+
 #define WIN_INIT(time)     \
   {                        \
     initscr();             \
@@ -33,9 +43,10 @@
   }
 
 
-
 void gameLoop();
-void handleUserInput(GameState_t *gs);
+void getUserInput(GameState_t *gs);
+void initWindows(GameWindows_t *window);
+void Draw(GameInfo_t *gm, GameWindows_t *window);
 
 
 #endif

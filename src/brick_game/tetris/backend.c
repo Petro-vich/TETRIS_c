@@ -19,8 +19,10 @@ int** createMatrix(int rows, int cols) {
   return temp; 
   }
 
-GameInfo_t 
-  updateCurrentState(GameState_t *gs) {
+
+
+GameInfo_t updateCurrentState() {
+  GameState_t *gs = getGs();
   GameInfo_t gi;
   gi.field = createMatrix(FIELD_ROWS, FIELD_COLS);
   gi.next = gs->next;
@@ -30,25 +32,40 @@ GameInfo_t
   gi.speed = gs->speed;
   gi.pause = gs->pause;
 
-
-  switch (gs->status) {
-    case Initial:
-      initGameState();
-    case Spawn:
-      gs->figure = gs->next;
-      gs->next = generateFigure();
-      gs->x = SPAWN_X;
-      gs->y = SPAWN_Y;
-      gs->status = Moving;
-      break;
-    case Left:
-    case Right:
-    case Down:
-      moveFigure(gs, &gi);
-      break;
-    default:
-      break;
+  if (gs->button == Start && gs->status == Initial) {
+    initGameState();
+    gs->status = Spawn;
   }
+  if (gs->status == Spawn) {
+    gs->figure = gs->next;
+    gs->next = generateFigure();
+    gs->x = SPAWN_X;
+    gs->y = SPAWN_Y;
+    gs->status = Moving;
+    gs->is_play = true;
+    gs->status = Moving;
+  } 
+
+  
+  // switch (gs->status) {
+  //   case Initial:
+  //     initGameState();
+  //   case Spawn:
+  //     gs->figure = gs->next;
+  //     gs->next = generateFigure();
+  //     gs->x = SPAWN_X;
+  //     gs->y = SPAWN_Y;
+  //     gs->status = Moving;
+  //     break;
+  //   case Left:
+  //   case Right:
+  //   case Down:
+  //     moveFigure(gs, &gi);
+  //     break;
+  //   default:
+  //     break;
+  // }
+    
   
   return gi;
 }
@@ -145,67 +162,79 @@ int canMove(GameState_t *gs) {
 //   }
 // }
 
+void initWindows(GameWindows_t *window) {
+  // 2. Параметры основного окна
+  int total_height = GAME_HEIGHT + BORDER_WIDTH;
+  int total_width = GAME_WIDTH + INFO_WIDTH + BORDER_WIDTH + BORDER_WIDTH; //Два окна по 2 символа
+  int start_y = LINES / 2 - total_height / 2;
+  int start_x = COLS / 2 - total_width / 2;
+  
+  // 3. Создание основного окна
+  window->main = newwin(total_height, total_width, start_y, start_x);
+  box(window->main, 0, 0);
 
+  // 4. Создание игрового поля
+  window->game = derwin(window->main, GAME_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
+  box(window->main, 0, 0);
 
-void Draw(GameInfo_t *gi) {
+  // 5. Создание информационного окна
+  window->info = derwin(window->main, GAME_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
+  box(window->game, 0, 0);
+
+  // 6. Создание окна следующей фигуры
+  window->newtFigure = derwin(window->info, 6, 6, 2 , 4);
+  box(window->info, 0, 0);
+
+  // 6. Creating window wait input ENTER
+  window->waitEnter = derwin(window->main, 7, 27, 8, 1);
+  box(window->newtFigure, 0, 0);
+
+}
+
+void Draw(GameInfo_t *gi, GameWindows_t *window) {
   GameState_t *gs = getGs();
 
+  // 6. Отрисовка информационного окна
+  wattron(window->info, COLOR_PAIR(1));
+  mvwprintw(window->info, 1, 5, "Next:");
 
-    // 2. Параметры основного окна
-    int total_height = GAME_HEIGHT + BORDER_WIDTH;
-    int total_width = GAME_WIDTH + INFO_WIDTH + BORDER_WIDTH + BORDER_WIDTH; //Два окна по 2 символа
-    int start_y = LINES / 2 - total_height / 2;
-    int start_x = COLS / 2 - total_width / 2;
+  wattron(window->info, COLOR_PAIR(2));
+  mvwprintw(window->info, 8, 4, "Score: %d", gi->score);
+  mvwprintw(window->info, 10, 2, "Max Score: 0");
 
-    // 3. Создание основного окна
-    WINDOW *main_win = newwin(total_height, total_width, start_y, start_x);
-    box(main_win, 0, 0);
-    
-    
-    // 4. Создание игрового поля
-    WINDOW *game_win = derwin(main_win, GAME_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
-    box(game_win, 0, 0);
-    
-    // 5. Создание информационного окна
-    WINDOW *info_win = derwin(main_win, GAME_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
-    box(info_win, 0, 0);
-    
-    // 6. Создание окна следующей фигуры
-    WINDOW *newtFigure = derwin(info_win, 6, 6, 2 , 4);
-    box(newtFigure, 0, 0);
+  wattron(window->info, COLOR_PAIR(3));
+  mvwprintw(window->info, 12, 4, "lvl: %d", gi->level);
 
-    // 6. Отрисовка информационного окна
-    wattron(info_win, COLOR_PAIR(1));
-    mvwprintw(info_win, 1, 5, "Next:");
-    
-    wattron(info_win, COLOR_PAIR(2));
-    mvwprintw(info_win, 8, 4, "Score: %d", gi->score);
-    mvwprintw(info_win, 10, 2, "Max Score: 0");
-    
-    wattron(info_win, COLOR_PAIR(3));
-    mvwprintw(info_win, 12, 4, "lvl: %d", gi->level);
-    
+  if (gs->status == Moving) {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (gs->figure[i][j] == 1) {
+          mvwprintw(window->game, gs->y+i + 1, gs->x+j, "*");
+        }
+      }
+    }  
+  }
     // 7. Обновление окон
-    wrefresh(main_win);
-    wrefresh(game_win);
-    wrefresh(info_win);
-    
+  wrefresh(window->main);
+  // wrefresh(window->game);
+  // wrefresh(window->info);
+  // wrefresh(window->newtFigure);
+  
+ 
+
     if (gs->status == Initial) {
-      WINDOW *waitEnter = derwin(main_win, 7, 27, 8, 1);
-      werase(waitEnter);
-      box(waitEnter, 0, 0);
-      wattron(waitEnter, COLOR_PAIR(3));
-      mvwprintw(waitEnter, 3, 7, "PREESS ENTER");
-      wrefresh(waitEnter);
-      delwin(waitEnter);
+      werase(window->waitEnter);
+      box(window->waitEnter, 0, 0);
+      wattron(window->waitEnter, COLOR_PAIR(3));
+      mvwprintw(window->waitEnter, 3, 7, "PREESS ENTER");
+      wrefresh(window->waitEnter);
     }
+  usleep(20000000);
+    // Освобождение ресурсов
+    // delwin(info_win);
+    // delwin(game_win);
+    // delwin(main_win);
     
-    // 9. Освобождение ресурсов
-    delwin(info_win);
-    delwin(game_win);
-    delwin(main_win);
-    
-    endwin();
     
 }
 
@@ -285,12 +314,13 @@ void initGameState() {
   gs->next = generateFigure();
   // gs->x = SPAWN_X;
   // gs->y = SPAWN_Y;
-  gs->status = Initial;
   gs->score = 0;
   gs->high_score = 10000;
   gs->level = 1;
   gs->speed = 500000;
   gs->pause = 0;
+  
+  
 }
 
 
