@@ -46,6 +46,12 @@ GameInfo_t updateCurrentState() {
     gs->status = Moving;
   } 
 
+  gs->button == Left;
+  if (gs->status == Moving) {
+    if (gs->button == Left) {
+      gs->x--;
+    }
+  }
   
   // switch (gs->status) {
   //   case Initial:
@@ -182,7 +188,7 @@ void initWindows(GameWindows_t *window) {
   box(window->game, 0, 0);
 
   // 6. Создание окна следующей фигуры
-  window->newtFigure = derwin(window->info, 6, 6, 2 , 4);
+  window->newtFigure = derwin(window->info, 4, 6, 2 , 4);
   box(window->info, 0, 0);
 
   // 6. Creating window wait input ENTER
@@ -211,6 +217,9 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
         if (gs->figure[i][j] == 1) {
           mvwprintw(window->game, gs->y+i + 1, gs->x+j, "*");
         }
+        if (gs->next[i][j] == 1) {
+          mvwprintw(window->newtFigure, i + 1, j + 1, "*");
+        }
       }
     }  
   }
@@ -220,7 +229,8 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
   // wrefresh(window->info);
   // wrefresh(window->newtFigure);
   
- 
+
+
 
     if (gs->status == Initial) {
       werase(window->waitEnter);
@@ -229,12 +239,11 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
       mvwprintw(window->waitEnter, 3, 7, "PREESS ENTER");
       wrefresh(window->waitEnter);
     }
-  usleep(20000000);
     // Освобождение ресурсов
     // delwin(info_win);
     // delwin(game_win);
     // delwin(main_win);
-    
+    usleep(2000000);
     
 }
 
