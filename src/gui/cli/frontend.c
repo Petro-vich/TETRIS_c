@@ -3,7 +3,7 @@
 
 
 int main(void) {
-  WIN_INIT(200);
+  WIN_INIT(700);
   
   gameLoop();
 
@@ -18,22 +18,23 @@ void gameLoop() {
   initWindows(&window);
   
 
-  while (gs->status != Terminate) {
+  while (gs->button != Terminate) {
     getUserInput(gs);
     gi = updateCurrentState();
     Draw(&gi, &window);
     freeGameInfo(&gi);
+    gs->button = ERR;
   }
   // cleanupWindows();
   endwin();
 }
 
 void getUserInput(GameState_t *gs) {
-  int button = KEY_ENTER;
-
+  int button = getch();
 
   switch (button) {
     case KEY_ENTER:
+    case '\n':
       gs->button = Start; 
       break;
     case 'p':
@@ -48,7 +49,7 @@ void getUserInput(GameState_t *gs) {
     case KEY_RIGHT:
       gs->button = Right;
       break;
-    case KEY_UP:
+    case KEY_UP:  
       gs->button = Up;
       break;
     case KEY_DOWN:
@@ -56,6 +57,7 @@ void getUserInput(GameState_t *gs) {
       break;
     case 'a':
       gs->button = Action;
+    break;
     default:
       gs->button = ERR;
       break;

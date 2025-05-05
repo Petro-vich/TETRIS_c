@@ -46,6 +46,7 @@ int canMove(GameState_t *gs);
 void updateField(GameInfo_t *gi, GameState_t *gs);
 void freeGameInfo(GameInfo_t *gi);
 void copyField(GameInfo_t *gi, GameState_t *gs);
+
 // void cleanupWindows();
 
 #endif

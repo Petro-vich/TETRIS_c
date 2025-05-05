@@ -35,43 +35,32 @@ GameInfo_t updateCurrentState() {
   if (gs->button == Start && gs->status == Initial) {
     initGameState();
     gs->status = Spawn;
+    gs->is_play = true;
   }
   if (gs->status == Spawn) {
     gs->figure = gs->next;
     gs->next = generateFigure();
     gs->x = SPAWN_X;
     gs->y = SPAWN_Y;
-    gs->status = Moving;
     gs->is_play = true;
     gs->status = Moving;
   } 
 
-  gs->button == Left;
-  if (gs->status == Moving) {
-    if (gs->button == Left) {
+  if (gs->status == Moving){
+    switch (gs->button)
+    {
+    case Left:
       gs->x--;
+      break;
+    case Right:
+      gs->x++;
+      break;
+    case Down:
+      gs->y++;
+    default:
+      gs->y++;
     }
   }
-  
-  // switch (gs->status) {
-  //   case Initial:
-  //     initGameState();
-  //   case Spawn:
-  //     gs->figure = gs->next;
-  //     gs->next = generateFigure();
-  //     gs->x = SPAWN_X;
-  //     gs->y = SPAWN_Y;
-  //     gs->status = Moving;
-  //     break;
-  //   case Left:
-  //   case Right:
-  //   case Down:
-  //     moveFigure(gs, &gi);
-  //     break;
-  //   default:
-  //     break;
-  // }
-    
   
   return gi;
 }
@@ -179,28 +168,29 @@ void initWindows(GameWindows_t *window) {
   window->main = newwin(total_height, total_width, start_y, start_x);
   box(window->main, 0, 0);
 
+  window->waitEnter = newwin(7, 27, start_y, start_x);
+  box(window->waitEnter, 0, 0);
+
   // 4. Создание игрового поля
   window->game = derwin(window->main, GAME_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
-  box(window->main, 0, 0);
+  box(window->game, 0, 0);
 
   // 5. Создание информационного окна
   window->info = derwin(window->main, GAME_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
-  box(window->game, 0, 0);
+  box(window->info, 0, 0);
 
   // 6. Создание окна следующей фигуры
   window->newtFigure = derwin(window->info, 4, 6, 2 , 4);
-  box(window->info, 0, 0);
+  box(window->newtFigure, 0, 0);
 
   // 6. Creating window wait input ENTER
-  window->waitEnter = derwin(window->main, 7, 27, 8, 1);
-  box(window->newtFigure, 0, 0);
+ 
 
 }
 
-void Draw(GameInfo_t *gi, GameWindows_t *window) {
+void renderInfoWin(GameWindows_t *window, GameInfo_t *gi) {
   GameState_t *gs = getGs();
 
-  // 6. Отрисовка информационного окна
   wattron(window->info, COLOR_PAIR(1));
   mvwprintw(window->info, 1, 5, "Next:");
 
@@ -210,8 +200,13 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
 
   wattron(window->info, COLOR_PAIR(3));
   mvwprintw(window->info, 12, 4, "lvl: %d", gi->level);
+  mvwprintw(window->info, 14, 1, "status: %d", gs->status);
+  mvwprintw(window->info, 16, 1, "button: %d", gs->button);
 
-  if (gs->status == Moving) {
+}
+
+void renderFigure(GameState_t *gs, GameWindows_t *window) {
+    if (gs->status == Moving) {
     for (int i = 0; i < 4; i++) {
       for (int j = 0; j < 4; j++) {
         if (gs->figure[i][j] == 1) {
@@ -223,28 +218,39 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
       }
     }  
   }
-    // 7. Обновление окон
-  wrefresh(window->main);
-  // wrefresh(window->game);
-  // wrefresh(window->info);
-  // wrefresh(window->newtFigure);
+}
+
+
+clear
+for (int y = 1; y < GAME_HEIGHT - 1; y++) {
+  for (int x = 1; x < GAME_WIDTH - 1; x++) {
+    mvwaddch(window->game, y, x, ' ');  // Очищаем только внутри рамки
+  }
+}
+
+
+void Draw(GameInfo_t *gi, GameWindows_t *window) {
+  GameState_t *gs = getGs();
   
+  if (gs->status == Initial) {
+    werase(window->waitEnter);
+    box(window->waitEnter, 0, 0);
+    wattron(window->waitEnter, COLOR_PAIR(3));
+    mvwprintw(window->waitEnter, 3, 7, "PREESS ENTER");
+    wnoutrefresh(window->waitEnter);
+  } 
 
-
-
-    if (gs->status == Initial) {
-      werase(window->waitEnter);
-      box(window->waitEnter, 0, 0);
-      wattron(window->waitEnter, COLOR_PAIR(3));
-      mvwprintw(window->waitEnter, 3, 7, "PREESS ENTER");
-      wrefresh(window->waitEnter);
-    }
-    // Освобождение ресурсов
-    // delwin(info_win);
-    // delwin(game_win);
-    // delwin(main_win);
-    usleep(2000000);
-    
+  if (gs->is_play){
+    renderInfoWin(window, gi);
+    werase(window->game);
+    renderFigure(gs, window);
+    clearWinGame();
+    wnoutrefresh(window->main);
+    wnoutrefresh(window->game);
+    wnoutrefresh(window->info);
+    wnoutrefresh(window->newtFigure); 
+  }
+  doupdate();
 }
 
 

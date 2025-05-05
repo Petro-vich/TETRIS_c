@@ -35,18 +35,21 @@ typedef struct
     curs_set(0);           \
     keypad(stdscr, TRUE);  \
     timeout(time);         \
-    nodelay(stdscr, TRUE); \
     start_color();         \
     init_pair(1, COLOR_BLUE, COLOR_BLACK);  \
     init_pair(2, COLOR_GREEN, COLOR_BLACK); \
     init_pair(3, COLOR_CYAN, COLOR_BLACK);  \
   }
+//  nodelay(stdscr, TRUE); 
+
 
 
 void gameLoop();
 void getUserInput(GameState_t *gs);
 void initWindows(GameWindows_t *window);
 void Draw(GameInfo_t *gm, GameWindows_t *window);
+void renderInfowWin(GameWindows_t *window, GameInfo_t *gi);
+
 
 
 #endif
