@@ -82,14 +82,29 @@ void moveFigure(GameState_t *gs, GameInfo_t *gi) {
   }
 }
 
+// void updateField(GameInfo_t *gi, GameState_t *gs) {  //Хз почему core dumped//
+//   for (int i = 0; i < 4; i++) {
+//     for (int j = 0; j < 4; j++) {
+//       int y = gs->y + i;
+//       int x = gs->x + j;
+//       if (gs->figure[i][j] == 1) {
+//         gi->field[y][x] = gs->figure[i][j];
+//         mvprintw(8, 2, "field[%d][%d]", gs->y + i, gs->x +j);
+//       }
+//     }
+//   }
+// }
+
 void updateField(GameInfo_t *gi, GameState_t *gs) {
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
       int y = gs->y + i;
       int x = gs->x + j;
       if (gs->figure[i][j] == 1) {
-        gi->field[y][x] = gs->figure[i][j];
-        mvprintw(8, 2, "field[%d][%d]", gs->y + i, gs->x +j);
+        if (x >= 0 && x < FIELD_COLS && y >= 0 && y < FIELD_ROWS) {
+          gi->field[y][x] = gs->figure[i][j];
+          mvprintw(8, 2, "field[%d][%d]", y, x);
+        }
       }
     }
   }
