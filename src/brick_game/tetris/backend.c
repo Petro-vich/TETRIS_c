@@ -46,19 +46,10 @@ GameInfo_t updateCurrentState() {
     gs->status = Moving;
   } 
 
-  if (gs->status == Moving){
-    switch (gs->button)
-    {
-    case Left:
-      gs->x--;
-      break;
-    case Right:
-      gs->x++;
-      break;
-    case Down:
-      gs->y++;
-    default:
-      gs->y++;
+  if (gs->status == Moving) {
+    if (gs->button == Left || gs->button == Right ||
+        gs->button == Down || gs->button == Up) {
+      moveFigure(gs, &gi);
     }
   }
   
@@ -66,7 +57,7 @@ GameInfo_t updateCurrentState() {
 }
 
 void moveFigure(GameState_t *gs, GameInfo_t *gi) {
-  switch (gs->status) {
+  switch (gs->button) {
     case Left:  
       if (canMove(gs)) {
         gs->x--;
@@ -85,6 +76,9 @@ void moveFigure(GameState_t *gs, GameInfo_t *gi) {
         updateField(gi, gs);
       }
       break;
+    case Up:
+      break;
+    default: break;
   }
 }
 
@@ -95,71 +89,53 @@ void updateField(GameInfo_t *gi, GameState_t *gs) {
       int x = gs->x + j;
       if (gs->figure[i][j] == 1) {
         gi->field[y][x] = gs->figure[i][j];
+        mvprintw(8, 2, "field[%d][%d]", gs->y + i, gs->x +j);
       }
     }
   }
 }
 
 int canMove(GameState_t *gs) {
-  int direction = gs->status;
   int check = 1;
+  int direction = gs->button;
 
-  if (direction == Left) {
-    if (gs->x - 1 < 0 || gs->x - 1 > FIELD_COLS - 4) {
-      check = 0;
-    }
+  int newX = gs->x;
+  int newY = gs->y;
+
+  switch (gs->button) {
+    case Left:  newX = gs->x - 1; break;
+    case Right: newX = gs->x + 1; break;
+    case Down:  newY = gs->y + 1; break;
+    default: check = 1;  // другие кнопки — всегда ок
   }
   
-  if (direction == Right) {
-    if (gs->x + 1 < 0 || gs->x > FIELD_COLS - 4) {
-      check = 0;
-    }
-  }
-
-  if (direction == Down) {
-    
+    // для каждой клетки фигуры проверяем выход за границы
     for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        int x = gs->x + j;
-        int y = gs->y + i;
-        
-
-        if (gs->figure[i][j] == 1 && y + 1 == FIELD_ROWS) {
-          printf("ATTACHING_FIELD");
+    for (int j = 0; j < 4; j++) {
+      if (gs->figure[i][j]) {
+        int fy = newY + i;
+        int fx = newX + j;
+        // левая и правая границы
+        if (fx < 1 || fx >= FIELD_COLS + 1) {
+          check = 0;
+        }
+        // нижняя граница
+        if (fy < 0 || fy >= FIELD_ROWS) {
           check = 0;
           gs->status = Spawn;
-          break;
-
         }
-        
-        if (check == 1) {
-          if (gs->figure[i][j] == 1 && gs->field[y+1][x] == 1) {
-          printf("ATTACHING_FIGURE");
-          check = 0;
-          }
-        }
+        // а тут можно ещё проверять пересечение с уже упавшими слоями:
+        // if (gs->field[fy][fx]) return 0;
       }
     }
   }
   return check;
 }
 
-// void printField(int **field) {
-//   for (int i = 0; i < FIELD_ROWS; i++) {
-//     for (int j = 0; j < FIELD_COLS; j++) {
-//       if (field[i][j] == 1) {
-//         printf("*");
-//       } else {
-//         printf("0");
-//       }
-//     }
-//     printf("\n");
-//   }
-// }
 
 void initWindows(GameWindows_t *window) {
   // 2. Параметры основного окна
-  int total_height = GAME_HEIGHT + BORDER_WIDTH;
+  int total_height = GAME_HEIGHT + BORDER_HEIGHT + BORDER_HEIGHT;
   int total_width = GAME_WIDTH + INFO_WIDTH + BORDER_WIDTH + BORDER_WIDTH; //Два окна по 2 символа
   int start_y = LINES / 2 - total_height / 2;
   int start_x = COLS / 2 - total_width / 2;
@@ -172,11 +148,11 @@ void initWindows(GameWindows_t *window) {
   box(window->waitEnter, 0, 0);
 
   // 4. Создание игрового поля
-  window->game = derwin(window->main, GAME_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
+  window->game = derwin(window->main, GAME_HEIGHT + BORDER_HEIGHT, GAME_WIDTH + BORDER_WIDTH, 1, 1);
   box(window->game, 0, 0);
 
   // 5. Создание информационного окна
-  window->info = derwin(window->main, GAME_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
+  window->info = derwin(window->main, GAME_HEIGHT + BORDER_HEIGHT, INFO_WIDTH, 1, GAME_WIDTH + 3);
   box(window->info, 0, 0);
 
   // 6. Создание окна следующей фигуры
@@ -231,6 +207,12 @@ void clearWinGame(GameState_t *gs, GameWindows_t *window) {
   }
 }
 
+void renderHelpInfo(GameState_t *gs) {
+  mvprintw(4, 2, "figure positin y: %d", gs->y);
+  mvprintw(6, 2, "figure positin x: %d", gs->x);
+
+}
+
 void Draw(GameInfo_t *gi, GameWindows_t *window) {
   GameState_t *gs = getGs();
   
@@ -250,6 +232,9 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
     wnoutrefresh(window->info);
     wnoutrefresh(window->newtFigure); 
   }
+
+  renderHelpInfo(gs);
+
   doupdate();
 }
 
@@ -340,14 +325,5 @@ void initGameState() {
 
 
 
-// typedef struct {
-//   int **field;
-//   int **next;  
-//   int score;
-//   int high_score;
-//   int level;
-//   int speed;
-//   int pause;
-// } GameInfo_t;
 
 // #endif
