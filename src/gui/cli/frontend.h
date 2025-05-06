@@ -10,6 +10,9 @@
 #define GAME_WIDTH 10
 #define INFO_WIDTH 15
 #define BORDER_WIDTH 2
+#define BORDER_HEIGHT 2
+
+
 
 #include <time.h>
 #include <stdio.h>
