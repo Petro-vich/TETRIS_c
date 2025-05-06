@@ -1,7 +1,7 @@
 #ifndef BRICKGAME_H
 #define BRICKGAME_H
 
-#define FIELD_ROWS 10
+#define FIELD_ROWS 20
 #define FIELD_COLS 10
 
 #include <stdlib.h>
