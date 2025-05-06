@@ -220,20 +220,21 @@ void renderFigure(GameState_t *gs, GameWindows_t *window) {
   }
 }
 
+void clearWinGame(GameState_t *gs, GameWindows_t *window) {
+  int y, x;
+  getmaxyx(window->game, y, x);
 
-clear
-for (int y = 1; y < GAME_HEIGHT - 1; y++) {
-  for (int x = 1; x < GAME_WIDTH - 1; x++) {
-    mvwaddch(window->game, y, x, ' ');  // Очищаем только внутри рамки
+  for (int i = 1; i < y-1; i++) {
+    for (int j = 1; j < x-1; j++) {
+      mvwaddch(window->game, i, j, ' ');
+    }
   }
 }
-
 
 void Draw(GameInfo_t *gi, GameWindows_t *window) {
   GameState_t *gs = getGs();
   
   if (gs->status == Initial) {
-    werase(window->waitEnter);
     box(window->waitEnter, 0, 0);
     wattron(window->waitEnter, COLOR_PAIR(3));
     mvwprintw(window->waitEnter, 3, 7, "PREESS ENTER");
@@ -241,10 +242,9 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
   } 
 
   if (gs->is_play){
+    clearWinGame(gs, window);
     renderInfoWin(window, gi);
-    werase(window->game);
     renderFigure(gs, window);
-    clearWinGame();
     wnoutrefresh(window->main);
     wnoutrefresh(window->game);
     wnoutrefresh(window->info);

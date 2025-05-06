@@ -18,6 +18,7 @@ void gameLoop() {
   initWindows(&window);
   
 
+  
   while (gs->button != Terminate) {
     getUserInput(gs);
     gi = updateCurrentState();
