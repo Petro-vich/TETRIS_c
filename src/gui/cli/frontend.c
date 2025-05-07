@@ -46,7 +46,6 @@ void getUserInput(GameState_t *gs) {
       break;
     case KEY_LEFT:
       gs->button = Left;
-      
       break;
     case KEY_RIGHT:
       gs->button = Right;
@@ -65,6 +64,52 @@ void getUserInput(GameState_t *gs) {
       break;
   }
 }
+
+// void getUserInput(GameState_t *gs) {
+//   int button = ERR;
+
+//   // 1) Открываем файл
+//   FILE *fp = fopen("getch.txt", "r");
+//   if (fp) {
+//       // 2) Считываем один символ
+//       int c = fgetc(fp);
+//       if (c != EOF) {
+//           button = c;
+//       }
+//   }
+
+//   switch (button) {
+//     case 's':
+//     case '\n':
+//       gs->button = Start; 
+//       break;
+//     case 'p':
+//       gs->button = Pause;
+//       break;
+//     case 'q':
+//       gs->button = Terminate;
+//       break;
+//     case KEY_LEFT:
+//       gs->button = Left;
+//       break;
+//     case KEY_RIGHT:
+//       gs->button = Right;
+//       break;
+//     case KEY_UP:  
+//       gs->button = Up;
+//       break;
+//     case 'd':
+//       gs->button = Down;
+//       break;
+//     case 'a':
+//       gs->button = Action;
+//     break;
+//     default:
+//       gs->button = ERR;
+//       break;
+//   }
+// }
+
 
 // typedef enum {
 //     Start,
