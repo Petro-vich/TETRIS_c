@@ -1,10 +1,11 @@
 #ifndef TETRIS_H
 #define TETRIS_H
 
-#include "../brickgame.h"
 #include <string.h>
+
+#include "../brickgame.h"
 #define SPAWN_X 4
-#define SPAWN_Y 0 
+#define SPAWN_Y 0
 
 typedef enum {
   Initial,
@@ -13,13 +14,12 @@ typedef enum {
   Shifting,
   Attaching,
   Gameover
-}GameStatus_t;
-
+} GameStatus_t;
 
 typedef struct {
   int **field;
   int **figure;
-  int **next;  
+  int **next;
   int x;
   int y;
   int score;
@@ -30,22 +30,18 @@ typedef struct {
   int button;
   int is_play;
   GameStatus_t status;
-}GameState_t;
+} GameState_t;
 
-
-
-GameState_t* getGs();
+GameState_t *getGs();
 GameInfo_t updateCurrentState();
-
-int** createMatrix(int rows, int cols);
 void initGameState();
-void gameLoop();
 void moveFigure(GameState_t *gs, GameInfo_t *gi);
-int** generateFigure();
 int canMove(GameState_t *gs);
 void updateField(GameInfo_t *gi, GameState_t *gs);
-void freeGameInfo(GameInfo_t *gi);
+int **generateFigure();
+int **createMatrix(int rows, int cols);
 void copyField(GameInfo_t *gi, GameState_t *gs);
+void freeGameInfo(GameInfo_t *gi);
 
 // void cleanupWindows();
 

@@ -12,47 +12,42 @@
 #define BORDER_WIDTH 2
 #define BORDER_HEIGHT 2
 
-
-
-#include <time.h>
-#include <stdio.h>
 #include <ncurses.h>
+#include <stdio.h>
+#include <time.h>
 #include <unistd.h>
+
 #include "../../brick_game/brickgame.h"
 #include "../../brick_game/tetris/backend.h"
 
-
-typedef struct 
-{
+typedef struct {
   WINDOW *main;
   WINDOW *game;
   WINDOW *info;
-  WINDOW *newtFigure;  
+  WINDOW *newtFigure;
   WINDOW *waitEnter;
 } GameWindows_t;
 
-#define WIN_INIT(time)     \
-  {                        \
-    initscr();             \
-    noecho();              \
-    curs_set(0);           \
-    keypad(stdscr, TRUE);  \
-    timeout(time);         \
-    start_color();         \
+#define WIN_INIT(time)                      \
+  {                                         \
+    initscr();                              \
+    noecho();                               \
+    curs_set(0);                            \
+    keypad(stdscr, TRUE);                   \
+    timeout(time);                          \
+    start_color();                          \
     init_pair(1, COLOR_BLUE, COLOR_BLACK);  \
     init_pair(2, COLOR_GREEN, COLOR_BLACK); \
     init_pair(3, COLOR_CYAN, COLOR_BLACK);  \
   }
-//  nodelay(stdscr, TRUE); 
-
-
 
 void gameLoop();
 void getUserInput(GameState_t *gs);
-void initWindows(GameWindows_t *window);
 void Draw(GameInfo_t *gm, GameWindows_t *window);
-void renderInfowWin(GameWindows_t *window, GameInfo_t *gi);
-
-
+void clearWinGame(GameInfo_t *gi, GameWindows_t *window);
+void renderWinGame(GameInfo_t const *gi, GameWindows_t *window);
+void renderInfoWin(GameInfo_t *gi, GameState_t *gs, GameWindows_t *window);
+void renderHelpInfo(GameState_t *gs);
+void initWindows(GameWindows_t *window);
 
 #endif
