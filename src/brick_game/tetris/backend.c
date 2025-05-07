@@ -42,6 +42,7 @@ GameInfo_t updateCurrentState() {
     gs->status = Spawn;
     gs->is_play = true;
   }
+
   if (gs->status == Spawn) {
     gs->figure = gs->next;
     gs->next = generateFigure();
@@ -49,14 +50,16 @@ GameInfo_t updateCurrentState() {
     gs->y = SPAWN_Y;
     gs->is_play = true;
     gs->status = Moving;
-  } 
-
-  if (gs->status == Moving) {
+  }else if (gs->status == Moving) {
     if (gs->button == Left || gs->button == Right ||
         gs->button == Down || gs->button == Up || gs->button == ERR) {
       moveFigure(gs, &gi);
     }
   }
+  if (gs->is_play) {
+    updateField(&gi, gs);
+  }
+  
 
   if (gs->status == Attaching) {
     for (int i = 0; i < 4; i++) {
@@ -69,6 +72,7 @@ GameInfo_t updateCurrentState() {
       }
     }
     gs->status = Spawn;
+
     copyField(&gi, gs);
     mvprintw(9, 2, "Attacing\n");
 
@@ -99,26 +103,27 @@ void moveFigure(GameState_t *gs, GameInfo_t *gi) {
     case Left:  
       if (canMove(gs)) {
         gs->x--;
-        updateField(gi, gs);
+        // updateField(gi, gs);
       }
       break;
     case Right:
       if (canMove(gs)) {
         gs->x++;
-        updateField(gi, gs);
+        // updateField(gi, gs);
       }
       break;
     case Down:
     case ERR:
       if (canMove(gs)) {
         gs->y++;
-        updateField(gi, gs);
+        // updateField(gi, gs);
       }
       break;
     case Up:
       break;
     default: break;
   }
+
 }
 
 // void updateField(GameInfo_t *gi, GameState_t *gs) {  //Хз почему core dumped
@@ -150,41 +155,40 @@ void updateField(GameInfo_t *gi, GameState_t *gs) {
 }
 
 int canMove(GameState_t *gs) {
-  int check = 1;
-  int direction = gs->button;
-
-  int newX = gs->x;
-  int newY = gs->y;
+  int dx = 0, dy = 0;
 
   switch (gs->button) {
-    case Left:  newX = gs->x - 1; break;
-    case Right: newX = gs->x + 1; break;
-    case Down: case ERR:  newY = gs->y + 1; break;
-    default: check = 1;  // другие кнопки — всегда ок
+    case Left:  dx = -1; break;
+    case Right: dx = 1;  break;
+    case Down: 
+    case ERR:   dy = 1;  break;
+    default: return 1;  // остальные кнопки всегда ОК
   }
-  
-    // для каждой клетки фигуры проверяем выход за границы
-    for (int i = 0; i < 4; i++) {
+
+  for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
-      if (gs->figure[i][j]) {
-        int fy = newY + i;
-        int fx = newX + j;
-        // левая и правая границы
-        if (fx < 1 || fx >= FIELD_COLS + 1) {
-          check = 0;
+      if (gs->figure[i][j] == 1) {
+        int fy = gs->y + i + dy;
+        int fx = gs->x + j + dx;
+
+        // проверка границ
+        if (fx < 0 || fx >= FIELD_COLS || fy < 0 || fy >= FIELD_ROWS) {
+          if (dy == 1) gs->status = Attaching;  // если ударились снизу
+          return 0;
         }
-        // нижняя граница
-        if (fy < 0 || fy >= FIELD_ROWS) {
-          check = 0;
-          gs->status = Attaching;
+
+        // проверка на столкновение с другими фигурами
+        if (gs->field[fy][fx]) {
+          if (dy == 1) gs->status = Attaching;
+          return 0;
         }
-        // а тут можно ещё проверять пересечение с уже упавшими слоями:
-        // if (gs->field[fy][fx]) return 0;
       }
     }
   }
-  return check;
+
+  return 1;
 }
+
 
 
 void initWindows(GameWindows_t *window) {
@@ -264,7 +268,7 @@ void renderWinGame(GameInfo_t *gi, GameWindows_t *window) {
   for (int i = 0; i < FIELD_ROWS; i++) {
     for (int j = 0; j < FIELD_COLS; j++) {
       if (gi->field[i][j] == 1) {
-        mvwaddch(window->game, i, j, '*');
+        mvwaddch(window->game, i+1, j+1, '*');
       }
     }
   }
