@@ -20,5 +20,11 @@ $(TARGET): $(OBJ_FILES)
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
+cppcheck:
+	cppcheck --check-level=exhaustive --enable=all --suppress=missingIncludeSystem $(GUI_DIR)/*.c $(GAME_DIR)/*.c
+
+clang:
+	clang-format -n $(GUI_DIR)/*.c $(GAME_DIR)/*.c $(GUI_DIR)/*.h $(GAME_DIR)/*.h
+
 clean:
 	rm -f $(OBJ_FILES) $(TARGET) 
