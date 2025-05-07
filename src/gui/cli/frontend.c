@@ -46,6 +46,7 @@ void getUserInput(GameState_t *gs) {
       break;
     case KEY_LEFT:
       gs->button = Left;
+      
       break;
     case KEY_RIGHT:
       gs->button = Right;

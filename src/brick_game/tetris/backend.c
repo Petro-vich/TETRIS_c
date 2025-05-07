@@ -25,6 +25,11 @@ GameInfo_t updateCurrentState() {
   GameState_t *gs = getGs();
   GameInfo_t gi;
   gi.field = createMatrix(FIELD_ROWS, FIELD_COLS);
+  if (gs->status != Initial) {
+    copyField(&gi, gs);
+  }
+  
+
   gi.next = gs->next;
   gi.score = gs->score;
   gi.high_score = gs->high_score;
@@ -48,11 +53,44 @@ GameInfo_t updateCurrentState() {
 
   if (gs->status == Moving) {
     if (gs->button == Left || gs->button == Right ||
-        gs->button == Down || gs->button == Up) {
+        gs->button == Down || gs->button == Up || gs->button == ERR) {
       moveFigure(gs, &gi);
     }
   }
-  
+
+  if (gs->status == Attaching) {
+    for (int i = 0; i < 4; i++) {
+      for (int j = 0; j < 4; j++) {
+        if (gs->figure[i][j] == 1) {
+        int fy = gs->y + i;
+        int fx = gs->x + j;
+        gs->field[fy][fx] = 1;
+        }
+      }
+    }
+    gs->status = Spawn;
+    copyField(&gi, gs);
+    mvprintw(9, 2, "Attacing\n");
+
+
+    ////////////////////////////////
+    FILE *out = fopen("field.txt", "w");
+    if (out) {
+      for (int row = 0; row < FIELD_ROWS; row++) {
+        for (int col = 0; col < FIELD_COLS; col++) {
+          fputc( gi.field[row][col] ? '*' : '.', out );
+        }
+        fputc('\n', out);
+      }
+      fclose(out);
+    } else {
+      mvprintw(10, 2, "ERROR: cannot open field.txt for writing");
+    }
+
+    // 4) Отладочное сообщение на экран
+    mvprintw(9, 2, "Attaching -> wrote field.txt");
+
+  }
   return gi;
 }
 
@@ -71,6 +109,7 @@ void moveFigure(GameState_t *gs, GameInfo_t *gi) {
       }
       break;
     case Down:
+    case ERR:
       if (canMove(gs)) {
         gs->y++;
         updateField(gi, gs);
@@ -82,7 +121,7 @@ void moveFigure(GameState_t *gs, GameInfo_t *gi) {
   }
 }
 
-// void updateField(GameInfo_t *gi, GameState_t *gs) {  //Хз почему core dumped//
+// void updateField(GameInfo_t *gi, GameState_t *gs) {  //Хз почему core dumped
 //   for (int i = 0; i < 4; i++) {
 //     for (int j = 0; j < 4; j++) {
 //       int y = gs->y + i;
@@ -120,7 +159,7 @@ int canMove(GameState_t *gs) {
   switch (gs->button) {
     case Left:  newX = gs->x - 1; break;
     case Right: newX = gs->x + 1; break;
-    case Down:  newY = gs->y + 1; break;
+    case Down: case ERR:  newY = gs->y + 1; break;
     default: check = 1;  // другие кнопки — всегда ок
   }
   
@@ -137,7 +176,7 @@ int canMove(GameState_t *gs) {
         // нижняя граница
         if (fy < 0 || fy >= FIELD_ROWS) {
           check = 0;
-          gs->status = Spawn;
+          gs->status = Attaching;
         }
         // а тут можно ещё проверять пересечение с уже упавшими слоями:
         // if (gs->field[fy][fx]) return 0;
@@ -179,9 +218,7 @@ void initWindows(GameWindows_t *window) {
 
 }
 
-void renderInfoWin(GameWindows_t *window, GameInfo_t *gi) {
-  GameState_t *gs = getGs();
-
+void renderInfoWin(GameInfo_t *gi, GameState_t *gs, GameWindows_t *window) {
   wattron(window->info, COLOR_PAIR(1));
   mvwprintw(window->info, 1, 5, "Next:");
 
@@ -194,24 +231,19 @@ void renderInfoWin(GameWindows_t *window, GameInfo_t *gi) {
   mvwprintw(window->info, 14, 1, "status: %d", gs->status);
   mvwprintw(window->info, 16, 1, "button: %d", gs->button);
 
-}
-
-void renderFigure(GameState_t *gs, GameWindows_t *window) {
-    if (gs->status == Moving) {
-    for (int i = 0; i < 4; i++) {
-      for (int j = 0; j < 4; j++) {
-        if (gs->figure[i][j] == 1) {
-          mvwprintw(window->game, gs->y+i + 1, gs->x+j, "*");
-        }
-        if (gs->next[i][j] == 1) {
-          mvwprintw(window->newtFigure, i + 1, j + 1, "*");
-        }
+  for (int i = 0; i < 4; i++) {
+    for (int j = 0; j < 4; j++) {
+      if (gs->next[i][j] == 1) {
+        mvwprintw(window->newtFigure, i + 1, j + 1, "*");
       }
-    }  
-  }
+    }
+  }  
+  
+  
+
 }
 
-void clearWinGame(GameState_t *gs, GameWindows_t *window) {
+void clearWinGame(GameInfo_t *gi, GameWindows_t *window) {
   int y, x;
   getmaxyx(window->game, y, x);
 
@@ -228,6 +260,17 @@ void renderHelpInfo(GameState_t *gs) {
 
 }
 
+void renderWinGame(GameInfo_t *gi, GameWindows_t *window) {
+  for (int i = 0; i < FIELD_ROWS; i++) {
+    for (int j = 0; j < FIELD_COLS; j++) {
+      if (gi->field[i][j] == 1) {
+        mvwaddch(window->game, i, j, '*');
+      }
+    }
+  }
+}
+
+
 void Draw(GameInfo_t *gi, GameWindows_t *window) {
   GameState_t *gs = getGs();
   
@@ -239,13 +282,13 @@ void Draw(GameInfo_t *gi, GameWindows_t *window) {
   } 
 
   if (gs->is_play){
-    clearWinGame(gs, window);
-    renderInfoWin(window, gi);
-    renderFigure(gs, window);
+    clearWinGame(gi, window);
+    renderWinGame(gi, window);
+    renderInfoWin(gi, gs, window);
     wnoutrefresh(window->main);
     wnoutrefresh(window->game);
     wnoutrefresh(window->info);
-    wnoutrefresh(window->newtFigure); 
+    wnoutrefresh(window->newtFigure);
   }
 
   renderHelpInfo(gs);
