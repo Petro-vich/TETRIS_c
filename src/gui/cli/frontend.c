@@ -1,12 +1,24 @@
 #include "frontend.h"
-
 #include "../../brick_game/tetris/backend.h"
+
+
 
 int main(void) {
   WIN_INIT(700);
   gameLoop();
   return 0;
+  
 }
+
+// Функция проверки, пора ли падать
+   int isTimeToFall(GameState_t *gs) {
+    gs->time.timeEnd = get_time_ms();
+    long result = gs->time.timeEnd - gs->time.timeStart;
+    if (result > 700) {
+      return 1;
+    }
+    return 0;
+   }
 
 void gameLoop() {
   GameState_t *gs = getGs();
@@ -27,6 +39,11 @@ void gameLoop() {
 
 void getUserInput(GameState_t *gs) {
   int button = getch();
+
+  if (isTimeToFall(gs) && gs->status != Initial) {
+      button = KEY_DOWN;
+  }
+
 
   switch (button) {
     case KEY_ENTER:
@@ -105,17 +122,6 @@ void getUserInput(GameState_t *gs) {
 //   }
 // }
 
-// typedef enum {
-//     Start,
-//     Pause,
-//     Terminate,
-//     Left,
-//     Right,
-//     Up,
-//     Down,
-//     Action
-// } UserAction_t;
-
 void Draw(GameInfo_t *gi, GameWindows_t *window) {
   GameState_t *gs = getGs();
 
@@ -174,6 +180,8 @@ void renderInfoWin(GameInfo_t *gi, GameState_t *gs, GameWindows_t *window) {
   mvwprintw(window->info, 12, 4, "lvl: %d", gi->level);
   mvwprintw(window->info, 14, 1, "status: %d", gs->status);
   mvwprintw(window->info, 16, 1, "button: %d", gs->button);
+  mvwprintw(window->info, 18, 1, "speed: %d", gs->speed / 1000);
+
 
   for (int i = 0; i < 4; i++) {
     for (int j = 0; j < 4; j++) {
@@ -220,3 +228,4 @@ void initWindows(GameWindows_t *window) {
 
   // 6. Creating window wait input ENTER
 }
+
