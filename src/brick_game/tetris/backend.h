@@ -17,6 +17,11 @@ typedef enum {
 } GameStatus_t;
 
 typedef struct {
+  long long timeStart;
+  long long timeEnd;
+} Time_t;
+
+typedef struct {
   int **field;
   int **figure;
   int **next;
@@ -30,6 +35,7 @@ typedef struct {
   int button;
   int is_play;
   GameStatus_t status;
+  Time_t time;
 } GameState_t;
 
 GameState_t *getGs();
@@ -42,6 +48,7 @@ int **generateFigure();
 int **createMatrix(int rows, int cols);
 void copyField(GameInfo_t *gi, GameState_t *gs);
 void freeGameInfo(GameInfo_t *gi);
+long long get_time_ms();
 
 // void cleanupWindows();
 
