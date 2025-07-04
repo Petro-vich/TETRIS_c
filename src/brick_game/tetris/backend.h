@@ -49,6 +49,7 @@ int **createMatrix(int rows, int cols);
 void copyField(GameInfo_t *gi, GameState_t *gs);
 void freeGameInfo(GameInfo_t *gi);
 long long get_time_ms();
+void rotateFigure(GameState_t *gs);
 
 // void cleanupWindows();
 

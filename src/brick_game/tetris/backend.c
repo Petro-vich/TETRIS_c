@@ -1,3 +1,5 @@
+#define _POSIX_C_SOURCE 200809L
+#include <time.h>
 #include "backend.h"
 
 #include "../../gui/cli/frontend.h"
@@ -46,7 +48,10 @@ GameInfo_t updateCurrentState() {
     if (gs->button == Down && canMove(gs)) {
       gs->y++;
       gs->time.timeStart = get_time_ms(); // Сброс таймера после падения
-    } else if (gs->button == Left || gs->button == Right || gs->button == Up || gs->button == ERR) {
+    } else if (gs->button == Up) {
+      // Поворот фигуры
+      rotateFigure(gs);
+    } else if (gs->button == Left || gs->button == Right || gs->button == ERR) {
       moveFigure(gs, &gi);
     }
   }
@@ -63,6 +68,36 @@ GameInfo_t updateCurrentState() {
           gs->field[fy][fx] = 1;
         }
       }
+    }
+    // ОЧИСТКА ЛИНИЙ и НАЧИСЛЕНИЕ ОЧКОВ
+    int lines_cleared = 0;
+    for (int row = FIELD_ROWS - 1; row >= 0; row--) {
+      int full = 1;
+      for (int col = 0; col < FIELD_COLS; col++) {
+        if (gs->field[row][col] == 0) {
+          full = 0;
+          break;
+        }
+      }
+      if (full) {
+        lines_cleared++;
+        // Сдвигаем все строки выше вниз
+        for (int r = row; r > 0; r--) {
+          for (int c = 0; c < FIELD_COLS; c++) {
+            gs->field[r][c] = gs->field[r-1][c];
+          }
+        }
+        // Очищаем верхнюю строку
+        for (int c = 0; c < FIELD_COLS; c++) {
+          gs->field[0][c] = 0;
+        }
+        row++; // Проверяем эту же строку снова, т.к. она теперь новая
+      }
+    }
+    // Начисление очков (простая формула: 100 за линию, 300 за 2, 700 за 3, 1500 за 4)
+    if (lines_cleared > 0) {
+      static const int score_table[5] = {0, 100, 300, 700, 1500};
+      gs->score += score_table[lines_cleared];
     }
     gs->status = Spawn;
 
@@ -265,6 +300,54 @@ void freeGameInfo(GameInfo_t *gi) {
     free(gi->field[i]);
   }
   free(gi->field);
+}
+
+void rotateFigure(GameState_t *gs) {
+    // Проверка: если фигура квадратная (O-образная), не вращаем
+    int is_square = 1;
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            if (gs->figure[i][j] != 1)
+                is_square = 0;
+    for (int i = 0; i < 2; i++)
+        for (int j = 2; j < 4; j++)
+            if (gs->figure[i][j] != 0)
+                is_square = 0;
+    for (int i = 2; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            if (gs->figure[i][j] != 0)
+                is_square = 0;
+    if (is_square)
+        return;
+
+    int temp[4][4] = {0};
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            temp[i][j] = gs->figure[i][j];
+
+    int rotated[4][4] = {0};
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            rotated[j][3 - i] = temp[i][j];
+
+    // Проверка: не выходит ли повернутая фигура за границы и не накладывается ли на другие блоки
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            if (rotated[i][j]) {
+                int y = gs->y + i;
+                int x = gs->x + j;
+                if (x < 0 || x >= FIELD_COLS || y < 0 || y >= FIELD_ROWS)
+                    return; // Поворот невозможен — выходим
+                if (gs->field[y][x])
+                    return; // Поворот невозможен — наложение
+            }
+        }
+    }
+
+    // Применяем поворот
+    for (int i = 0; i < 4; i++)
+        for (int j = 0; j < 4; j++)
+            gs->figure[i][j] = rotated[i][j];
 }
 
 // #endif
