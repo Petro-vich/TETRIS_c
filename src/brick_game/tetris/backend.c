@@ -2,6 +2,13 @@
 
 #include "../../gui/cli/frontend.h"
 
+long long get_time_ms() {
+    struct timespec ts;
+    clock_gettime(CLOCK_MONOTONIC, &ts);  // Монотонное время (не зависит от системных часов)
+    return ts.tv_sec * 1000LL + ts.tv_nsec / 1000000LL;
+}
+
+
 GameState_t *getGs() {
   static GameState_t gs;
   return &gs;
@@ -36,8 +43,10 @@ GameInfo_t updateCurrentState() {
     gs->is_play = true;
     gs->status = Moving;
   } else if (gs->status == Moving) {
-    if (gs->button == Left || gs->button == Right || gs->button == Down ||
-        gs->button == Up || gs->button == ERR) {
+    if (gs->button == Down && canMove(gs)) {
+      gs->y++;
+      gs->time.timeStart = get_time_ms(); // Сброс таймера после падения
+    } else if (gs->button == Left || gs->button == Right || gs->button == Up || gs->button == ERR) {
       moveFigure(gs, &gi);
     }
   }
@@ -90,7 +99,7 @@ void initGameState() {
   gs->score = 0;
   gs->high_score = 10000;
   gs->level = 1;
-  gs->speed = 500000;
+  gs->speed = 700000;
   gs->pause = 0;
 }
 
