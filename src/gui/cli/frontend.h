@@ -12,14 +12,8 @@
 #define BORDER_WIDTH 2
 #define BORDER_HEIGHT 2
 
-#include <ncurses.h>
-#include <stdio.h>
-#include <time.h>
-#include <unistd.h>
-
-#include "../../brick_game/brickgame.h"
-#include "../../brick_game/tetris/backend.h"
-
+#include "../../brick_game/tetris/includes/backend.h"
+#include "../../brick_game/tetris/includes/common.h"
 typedef struct {
   WINDOW *main;
   WINDOW *game;
@@ -39,15 +33,17 @@ typedef struct {
     init_pair(1, COLOR_BLUE, COLOR_BLACK);  \
     init_pair(2, COLOR_GREEN, COLOR_BLACK); \
     init_pair(3, COLOR_CYAN, COLOR_BLACK);  \
+    init_pair(10, COLOR_BLACK, COLOR_BLUE); \
   }
 
 void gameLoop();
 void getUserInput(GameState_t *gs);
-void Draw(GameInfo_t *gm, GameWindows_t *window);
-void clearWinGame(GameInfo_t *gi, GameWindows_t *window);
+void draw(GameInfo_t *gm, GameWindows_t *window);
+void clearWinGame(GameWindows_t *window);
 void renderWinGame(GameInfo_t const *gi, GameWindows_t *window);
-void renderInfoWin(GameInfo_t *gi, GameState_t *gs, GameWindows_t *window);
-void renderHelpInfo(GameState_t *gs);
+void renderInfoWin(GameInfo_t *gi, GameState_t const *gs,
+                   GameWindows_t *window);
+// void renderHelpInfo(GameState_t *gs);
 void initWindows(GameWindows_t *window);
 
 #endif

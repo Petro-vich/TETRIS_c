@@ -4,24 +4,25 @@
 #define FIELD_ROWS 20
 #define FIELD_COLS 10
 
-#include <stdlib.h>
 #include <stdio.h>
+#include <stdlib.h>
 typedef enum {
-  Start,      // f1
-  Pause,      // f2
-  Terminate,  // f3
-  Left,       // 3
-  Right,      // 4
-  Up,         // none
-  Down,       // падение
-  Action      // rotate  // 7
+  Start,
+  Pause,
+  Terminate,
+  Left,
+  Right,
+  Up,
+  Down,
+  Action,
+  Space
 } UserAction_t;
 
 typedef struct {
   int **field;
-  int **next;  
+  int **next;
   int score;
-  int high_score;
+  int highScore;
   int level;
   int speed;
   int pause;
