@@ -50,3 +50,15 @@ brickgame-tetris
 
 # Запуск тестов
 make test
+
+# Компиляция библеотеки
+make dvi
+
+# Сохранить проект в ZIP
+make dust
+
+# Покрытие проекта
+make gcov_report
+
+# Запуск тестов
+make test
